@@ -4,19 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 //import com.example.mybatisplustest.common.R;
 //import com.example.mybatisplustest.entity.Employee;
 //import com.example.mybatisplustest.service.EmployeeService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.fooddelivery.Service.EmployeeService;
 import com.example.fooddelivery.common.R;
 import com.example.fooddelivery.entity.Employee;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -76,6 +76,12 @@ public class EmployeeController {
         return R.success("退出成功");
     }
 
+    /**
+     * 新增员工
+     * @param request
+     * @param emp
+     * @return
+     */
     @PostMapping()
     public R<String> saveUser(HttpServletRequest request,@RequestBody Employee emp){
         log.info("新增员工：{}",emp.toString());
@@ -83,10 +89,10 @@ public class EmployeeController {
         String password = "111111";
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         emp.setPassword(password);
-        emp.setCreateTime(LocalDateTime.now());
-        emp.setUpdateTime(LocalDateTime.now());
-        emp.setCreateUser((Long) request.getSession().getAttribute("employee"));
-        emp.setUpdateUser((Long) request.getSession().getAttribute("employee"));
+//        emp.setCreateTime(LocalDateTime.now());
+//        emp.setUpdateTime(LocalDateTime.now());
+//        emp.setCreateUser((Long) request.getSession().getAttribute("employee"));
+//        emp.setUpdateUser((Long) request.getSession().getAttribute("employee"));
 
 //        try {
 //            employeeService.save(emp);
@@ -95,5 +101,51 @@ public class EmployeeController {
 //        }
         employeeService.save(emp);
         return R.success("新增员工成功");
+    }
+
+    /**
+     * 分页处理器，使用page对象
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
+    @GetMapping("/page")
+    public R<Page<Employee>> getPage(int page, int pageSize, String name){
+        log.info("page = {},pageSize = {},name = {}" ,page,pageSize,name);
+        //构造分页构造器
+        Page pageinfo = new Page(page,pageSize);
+        //构造条件构造器
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.like(!StringUtils.isEmpty(name), Employee::getName,name);
+        queryWrapper.orderByDesc(Employee::getUpdateTime);
+        //查询
+        employeeService.page(pageinfo,queryWrapper);
+        return R.success(pageinfo);
+    }
+
+    /**
+     * 根据id来修改员工信息
+     * @param employee
+     * @return
+     */
+    @PutMapping ()
+    public R<String> update(HttpServletRequest request, @RequestBody Employee employee){
+//        employeeService.update();
+        Long empId = (Long) request.getSession().getAttribute("employee");
+//        employee.setUpdateUser(empId);
+//        employee.setUpdateTime(LocalDateTime.now());
+        log.info(employee.toString());
+        employeeService.updateById(employee);
+        return R.success("员工信息修改成功");
+    }
+
+    @GetMapping("/{id}")
+    public R<Employee> getUserById(@PathVariable Long id){
+        Employee emp = employeeService.getById(id);
+        if(emp != null){
+            return R.success(emp);
+        }
+        return R.error("没有查询到对应员工信息");
     }
 }

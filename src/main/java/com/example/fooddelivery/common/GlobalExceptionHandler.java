@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     public R<String> exceptionHandler(SQLIntegrityConstraintViolationException ex){
         log.error(ex.getMessage());
         if(ex.getMessage().contains("Duplicate entry")){
-            return R.error("用户名已被注册！");
+            return R.error("重复添加！！");
         }
         return R.error("失败了");
     }
