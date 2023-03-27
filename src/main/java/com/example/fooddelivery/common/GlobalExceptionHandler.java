@@ -26,6 +26,11 @@ public class GlobalExceptionHandler {
         if(ex.getMessage().contains("Duplicate entry")){
             return R.error("重复添加！！");
         }
+
         return R.error("失败了");
+    }
+    @ExceptionHandler(CustomException.class)
+    public R<String> exceptionHandler(CustomException ex){
+        return R.error(ex.getMessage());
     }
 }
