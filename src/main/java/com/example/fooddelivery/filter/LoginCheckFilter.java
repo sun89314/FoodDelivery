@@ -13,7 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * 检查用户是否已经完成登陆
+ * 检查用户是否已经完成登陆，知识点：
+ * 1 使用webfilter开启过滤器，同时要开启@ServletComponentScan
+ * 2 通过request.getRequestURI()获取链接，通过AntPathMatcher判断链接是否需要过滤
+ * 3 filterChain.doFilter(request,response)放行
+ *
  */
 @Slf4j
 @WebFilter(filterName = "LoginCheckFilter",urlPatterns = "/*")
@@ -24,7 +28,8 @@ public class LoginCheckFilter implements Filter {
             "/employee/login",
             "/employee/logout",
             "/backend/**",
-            "/front/**"
+            "/front/**",
+            "/common/**"
     };
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
