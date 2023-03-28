@@ -18,6 +18,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/common")
 public class CommonController {
+    /**
+     * 实现文件上传功能：
+     * 关键点1：MultipartFile file
+     * 关键点2：file.transferTo(new File(basePath+fileName));
+     */
     @Value("${reggie.path}")
     private String basePath;
     @PostMapping("/upload")
@@ -36,6 +41,15 @@ public class CommonController {
         return R.success(fileName);
     }
 
+    /**
+     * 实现文件传输功能，服务器发送请求后返回一个response输出流，将流输出到服务器端
+     * 重重点： 关键点，服务器image块src属性向http://localhost:8080/common/download?name=xxx.jpeg发送一个请求，
+     * 接收到的请求后用os输出数据
+     * 关键点1：while((len = fis.read(bytes)) != -1 )输出文件的格式
+     * 关键点2：response.getOutputStream()不断的write byte数组到浏览器
+     * @param name
+     * @param response
+     */
     @GetMapping("/download")
     public void download(String name, HttpServletResponse response){
         // 输入流，读取文件内容
