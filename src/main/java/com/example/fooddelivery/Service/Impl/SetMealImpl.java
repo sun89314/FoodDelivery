@@ -1,5 +1,6 @@
 package com.example.fooddelivery.Service.Impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.fooddelivery.Service.SetMealDishService;
 import com.example.fooddelivery.Service.SetMealService;
@@ -25,5 +26,18 @@ public class SetMealImpl extends ServiceImpl<SetMealMapper, Setmeal> implements 
             setmealDish.setSetmealId(setmealDto.getId());
         }
         setMealDishService.saveBatch(setmealDto.getSetmealDishes());
+    }
+
+    @Override
+    public void removeWithDishByIds(List<String> list) {
+//        this.removeByIds(list.stream().map(Long::parseLong).collect(Collectors.toList()));
+        for(String StringId:list){
+            Long id = Long.parseLong(StringId);
+            this.removeById(id);
+            LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(SetmealDish::getSetmealId,id);
+            setMealDishService.remove(queryWrapper);
+//            setMealDishService.remove(id);
+        }
     }
 }

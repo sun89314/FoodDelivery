@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,12 @@ public class SetMealController {
         return R.success("添加成功");
     }
 
+    /**
+     * 分页展示套餐
+     * @param page
+     * @param pageSize
+     * @return
+     */
     @GetMapping("/page")
     public R<Page> getPage(int page,int pageSize){
         Page pageInfo = new Page(page, pageSize);
@@ -61,5 +68,26 @@ public class SetMealController {
         }
         finalPage.setRecords(setmealDtos);
         return R.success(finalPage);
+    }
+
+    @PostMapping("/status/{status}")
+    public R<String> updateStatus(@PathVariable("status") Integer status, String ids){
+        String[] id = ids.split(",");
+        List<String> list = Arrays.asList(id);
+        for(String s:list){
+            Setmeal setmeal = new Setmeal();
+            setmeal.setId(Long.parseLong(s));
+            setmeal.setStatus(status);
+            setMealService.updateById(setmeal);
+        }
+        return R.success("修改成功");
+    }
+
+    @DeleteMapping
+    public R<String> deleteSetMeal(String ids){
+        String[] id = ids.split(",");
+        List<String> list = Arrays.asList(id);
+        setMealService.removeWithDishByIds(list);
+        return R.success("删除成功");
     }
 }
