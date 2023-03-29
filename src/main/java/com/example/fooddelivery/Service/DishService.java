@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.fooddelivery.dto.DishDto;
 import com.example.fooddelivery.entity.Dish;
 
+import java.util.List;
+
 public interface DishService extends IService<Dish> {
     /**
      * 新增菜品，同时添加菜品的风味
@@ -19,4 +21,6 @@ public interface DishService extends IService<Dish> {
     public DishDto getByIdWithFlavor(Long id);
 
     public void updateWithFlavor(DishDto dishDto);
+
+    void removeDishes(List<String> list);
 }

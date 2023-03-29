@@ -1,6 +1,7 @@
 package com.example.fooddelivery.Controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.fooddelivery.Service.CategoryService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,28 +66,62 @@ public class DishController {
 
         return R.success(dishDtoPage);
     }
+
+    /**
+     * 返回指定菜品对象给到菜品修改界面
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     public R<DishDto> getSingleDish(@PathVariable long id){
         log.info("获取id为,{} 的元素",id);
         DishDto dto = dishService.getByIdWithFlavor(id);
         return R.success(dto);
     }
-//    @PostMapping("/{id}")
-//    public R<String> update(@PathVariable int id){
-//
-//        return R.success("修改成功");
-//    }
     /**
-     * 启用禁用菜品
+     * 根据分类id或者搜索名字去返回菜品列表
+     * @param  categoryId name
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> getDishByCategory(Long categoryId,String name){
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(categoryId!=null,Dish::getCategoryId,categoryId);
+        queryWrapper.like(name!=null,Dish::getName,name);
+        List<Dish> list = dishService.list(queryWrapper);
+
+        return R.success(list);
+    }
+
+
+
+    /**
+     * 启用禁用菜品,接受一个或者多个id的字符串
      * @param status
-     * @param ids
+     * @param s
      * @return
      */
     @PostMapping("/status/{status}")
-    public R<String> updateStatus(@PathVariable int status,@RequestParam("ids") Long ids){
-        UpdateWrapper<Dish> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().eq(Dish::getId,ids).set(Dish::getStatus,status);
+    public R<String> updateStatus(@PathVariable int status,@RequestParam("ids") String s){
+//        UpdateWrapper<Dish> updateWrapper = new UpdateWrapper<>();
+        String[] ids = s.split(",");
+        LambdaUpdateWrapper<Dish> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.in(Dish::getId,ids).set(Dish::getStatus,status);
+
         dishService.update(null,updateWrapper);
+        return R.success("修改菜品状态成功");
+    }
+    /**
+     * 删除菜品,接受一个或者多个id的字符串
+     * @param s
+     * @return
+     */
+    @DeleteMapping
+    public R<String> deleteDishes(@RequestParam("ids") String s){
+//        UpdateWrapper<Dish> updateWrapper = new UpdateWrapper<>();
+        String[] ids = s.split(",");
+        List<String> list = Arrays.asList(ids);
+        dishService.removeDishes(list);
         return R.success("修改菜品状态成功");
     }
 
