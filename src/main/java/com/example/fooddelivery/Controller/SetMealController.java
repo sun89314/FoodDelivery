@@ -83,6 +83,11 @@ public class SetMealController {
         return R.success("修改成功");
     }
 
+    /**
+     * 删除套餐，同时删除套餐对应的菜品
+     * @param ids
+     * @return
+     */
     @DeleteMapping
     public R<String> deleteSetMeal(String ids){
         String[] id = ids.split(",");

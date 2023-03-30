@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.fooddelivery.Service.CategoryService;
+import com.example.fooddelivery.Service.DishFlavorService;
 import com.example.fooddelivery.Service.DishService;
 import com.example.fooddelivery.common.R;
 import com.example.fooddelivery.dto.DishDto;
 import com.example.fooddelivery.entity.Category;
 import com.example.fooddelivery.entity.Dish;
+import com.example.fooddelivery.entity.DishFlavor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,8 @@ public class DishController {
     private DishService dishService;
     @Autowired
     private CategoryService categoryService;
-
+    @Autowired
+    private DishFlavorService dishFlavorService;
     /**
      * 获取菜品分页内容
      * 关键点1：页面中需要的元素不可能每次都正好对应数据库中的元素，所以需要额外创建一个data transfer object，继承原来的类
@@ -80,18 +83,50 @@ public class DishController {
     }
     /**
      * 根据分类id或者搜索名字去返回菜品列表
-     * @param  categoryId name
+     * @param  dish
      * @return
      */
     @GetMapping("/list")
-    public R<List<Dish>> getDishByCategory(Long categoryId,String name){
+    public R<List<DishDto>> getDishByCategory(Dish dish){
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(categoryId!=null,Dish::getCategoryId,categoryId);
-        queryWrapper.like(name!=null,Dish::getName,name);
-        List<Dish> list = dishService.list(queryWrapper);
+        queryWrapper.eq(dish.getCategoryId() != null ,Dish::getCategoryId,dish.getCategoryId());
+        //添加条件，查询状态为1（起售状态）的菜品
+        queryWrapper.eq(Dish::getStatus,1);
+
+        //添加排序条件
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+
+        List<Dish> dishList = dishService.list(queryWrapper);
+        List<DishDto> list = dishList.stream().map(item -> {
+            DishDto dishDto = new DishDto();
+            BeanUtils.copyProperties(item,dishDto);//复制老的
+            Long categoryId = item.getCategoryId();//分类id
+            //根据id查询分类对象
+            Category category = categoryService.getById(categoryId);
+
+            if(category != null){
+                String categoryName = category.getName();
+                dishDto.setCategoryName(categoryName);
+            }
+            Long dishId = item.getId();
+            LambdaQueryWrapper<DishFlavor> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(DishFlavor::getDishId,dishId);
+            dishDto.setFlavors(dishFlavorService.list(queryWrapper1));
+            return dishDto;
+        }).collect(Collectors.toList());
+
 
         return R.success(list);
     }
+//    @GetMapping("/list")
+//    public R<List<Dish>> getDishByCategory(Long categoryId,String name){
+//        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(categoryId!=null,Dish::getCategoryId,categoryId);
+//        queryWrapper.like(name!=null,Dish::getName,name);
+//        List<Dish> list = dishService.list(queryWrapper);
+//
+//        return R.success(list);
+//    }
 
 
 

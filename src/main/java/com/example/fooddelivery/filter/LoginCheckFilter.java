@@ -29,7 +29,9 @@ public class LoginCheckFilter implements Filter {
             "/employee/logout",
             "/backend/**",
             "/front/**",
-            "/common/**"
+            "/common/**",
+            "/user/sendMsg",
+            "/user/login",
     };
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -46,15 +48,20 @@ public class LoginCheckFilter implements Filter {
             return;
         }
         //4 需要被处理的话就去判断登陆状态
-        if(request.getSession().getAttribute("employee") != null){
+        if(request.getSession().getAttribute("employee") != null) {
 //            log.info("用户已登陆，ID为： {}",request.getSession().getAttribute("employee"));
             BaseContext.setCurrentId((Long) request.getSession().getAttribute("employee"));
-            filterChain.doFilter(request,response);
-
-        }else{
-            //如果未登陆，那么就需要响应一个数据去让前端去转发
-            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+            filterChain.doFilter(request, response);
+            return;
         }
+        //4.2 手机端判断是否登陆
+        if(request.getSession().getAttribute("user") != null){
+//            log.info("用户已登陆，ID为： {}",request.getSession().getAttribute("employee"));
+            BaseContext.setCurrentId((Long) request.getSession().getAttribute("user"));
+            filterChain.doFilter(request,response);
+            return;
+        }
+        response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         return;
         //5 如果未登陆就返回登陆界面
 //        filterChain.doFilter(request,response);

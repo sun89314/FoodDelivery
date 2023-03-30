@@ -53,12 +53,20 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/list")
-    public R<List<Category>> getCategoryList(int type){
+    public R<List<Category>> getCategoryList(Integer type){
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Category::getType,type);
+        System.out.println(type);
+        queryWrapper.eq(type !=null,Category::getType,type);
         List<Category> list = categoryService.list(queryWrapper);
         return R.success(list);
     }
+//    @GetMapping("/list")
+//    public R<List<Category>> getCategoryList(){
+//        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+//        List<Category> list = categoryService.list();
+//        return R.success(list);
+//    }
+
 
     /**
      * 根据id删除分类
