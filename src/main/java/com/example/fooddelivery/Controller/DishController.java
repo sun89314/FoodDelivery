@@ -118,14 +118,22 @@ public class DishController {
 
         return R.success(list);
     }
-//    @GetMapping("/list")
-//    public R<List<Dish>> getDishByCategory(Long categoryId,String name){
-//        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.eq(categoryId!=null,Dish::getCategoryId,categoryId);
-//        queryWrapper.like(name!=null,Dish::getName,name);
-//        List<Dish> list = dishService.list(queryWrapper);
-//
-//        return R.success(list);
+    /**
+     * 添加菜品
+     * @param dishDto
+     * @return
+     */
+//    @PostMapping
+//    public R<List<Dish>> getDishByCategory(@RequestBody DishDto dishDto){
+//        Dish dish = new Dish();
+//        BeanUtils.copyProperties(dishDto,dish);
+//        dishService.save(dish);
+//        List<DishFlavor> flavors = dishDto.getFlavors();
+//        for(DishFlavor flavor:flavors){
+//            flavor.setDishId(dish.getId());
+//        }
+//        dishFlavorService.saveBatch(flavors);
+//        return R.success(Arrays.asList(dish));
 //    }
 
 
