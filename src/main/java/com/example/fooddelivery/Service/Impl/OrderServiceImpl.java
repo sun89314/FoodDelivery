@@ -9,15 +9,26 @@ import com.example.fooddelivery.entity.*;
 import com.example.fooddelivery.Service.*;
 import com.example.fooddelivery.mapper.OrderMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.batch.BasicBatchConfigurer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static java.lang.Thread.sleep;
 
 @Service
 @Slf4j
@@ -35,23 +46,50 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     @Autowired
     private OrderDetailService orderDetailService;
 
+    class MyThread extends Thread{
+        private List<ShoppingCart> shoppingCarts;
+
+        public MyThread(List<ShoppingCart> shoppingCarts ) {
+            this.shoppingCarts = shoppingCarts;
+        }
+        public void run(){
+
+                ShoppingCart cart = new ShoppingCart();
+                BeanUtils.copyProperties(shoppingCarts.get(0),cart);
+                cart.setNumber(cart.getNumber() + 1);
+                shoppingCartService.updateById(cart);
+
+        }
+    };
     /**
      * 用户下单
      * @param orders
      */
-    @Transactional
+    @Transactional//(isolation = Isolation.READ_COMMITTED)
     public void submit(Orders orders) {
         //获得当前用户id
         Long userId = BaseContext.getCurrentId();
+        Integer isolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
+        if(isolationLevel != null)System.out.println("Current transaction isolation level: " + isolationLevel);
 
         //查询当前用户的购物车数据
         LambdaQueryWrapper<ShoppingCart> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ShoppingCart::getUserId,userId);
         List<ShoppingCart> shoppingCarts = shoppingCartService.list(wrapper);
-
+        log.info(shoppingCarts.toString());
         if(shoppingCarts == null || shoppingCarts.size() == 0){
             throw new CustomException("购物车为空，不能下单");
         }
+        MyThread thread1 = new MyThread(shoppingCarts);
+        thread1.start();
+        try {
+            thread1.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        List<ShoppingCart> shoppingCarts2 = shoppingCartService.list(wrapper);
+        log.info(shoppingCarts2.toString());
 
         //查询用户数据
         User user = userService.getById(userId);
@@ -67,7 +105,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
 
         AtomicInteger amount = new AtomicInteger(0);
 
-        List<OrderDetail> orderDetails = shoppingCarts.stream().map((item) -> {
+        List<OrderDetail> orderDetails = shoppingCarts2.stream().map((item) -> {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrderId(orderId);
             orderDetail.setNumber(item.getNumber());
