@@ -9,6 +9,9 @@ import com.example.fooddelivery.entity.*;
 import com.example.fooddelivery.Service.*;
 import com.example.fooddelivery.mapper.OrderMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.batch.BasicBatchConfigurer;
@@ -17,61 +20,68 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
+import org.springframework.jdbc.datasource.ConnectionHolder;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.sql.DataSource;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 @Service
 @Slf4j
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implements OrderService {
-
+    @Autowired
+    private SqlSession sqlSession;
     @Autowired
     private ShoppingCartService shoppingCartService;
 
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private DataSource dataSource;
     @Autowired
     private AddressBookService addressBookService;
-
+    @Autowired
+    private SqlSessionFactory sqlSessionFactory;
     @Autowired
     private OrderDetailService orderDetailService;
+    @Autowired
+    private SqlSessionTemplate sqlSessionTemplate;
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void change( List<ShoppingCart> shoppingCarts){
+        ShoppingCart cart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCarts.get(0),cart);
+        cart.setNumber(cart.getNumber() + 1);
+        Connection conn = sqlSessionTemplate.getConnection();
+        System.out.println("Current connection: " + conn);
+        shoppingCartService.updateById(cart);
 
-    class MyThread extends Thread{
-        private List<ShoppingCart> shoppingCarts;
-
-        public MyThread(List<ShoppingCart> shoppingCarts ) {
-            this.shoppingCarts = shoppingCarts;
-        }
-        public void run(){
-
-                ShoppingCart cart = new ShoppingCart();
-                BeanUtils.copyProperties(shoppingCarts.get(0),cart);
-                cart.setNumber(cart.getNumber() + 1);
-                shoppingCartService.updateById(cart);
-
-        }
-    };
+    }
     /**
      * 用户下单
      * @param orders
      */
-    @Transactional//(isolation = Isolation.READ_COMMITTED)
-    public void submit(Orders orders) {
+    @Transactional(isolation = Isolation.DEFAULT)
+    public void submit(Orders orders,Thread thread1){
         //获得当前用户id
         Long userId = BaseContext.getCurrentId();
         Integer isolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
-        if(isolationLevel != null)System.out.println("Current transaction isolation level: " + isolationLevel);
-
+        if(isolationLevel != null) System.out.println("Current transaction isolation level: " + isolationLevel);
+        Connection conn = sqlSessionTemplate.getConnection();
+        System.out.println("Current connection: " + conn);
         //查询当前用户的购物车数据
         LambdaQueryWrapper<ShoppingCart> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ShoppingCart::getUserId,userId);
@@ -80,15 +90,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         if(shoppingCarts == null || shoppingCarts.size() == 0){
             throw new CustomException("购物车为空，不能下单");
         }
-        MyThread thread1 = new MyThread(shoppingCarts);
-        thread1.start();
-        try {
-            thread1.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
-        List<ShoppingCart> shoppingCarts2 = shoppingCartService.list(wrapper);
+//        try {
+//            conn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            thread1.join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        change(shoppingCarts);
+
+//        try {
+//            conn.commit();
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+
+            sqlSession.clearCache();
+
+
+        List<ShoppingCart> shoppingCarts2 =  shoppingCartService.list(wrapper);
         log.info(shoppingCarts2.toString());
 
         //查询用户数据

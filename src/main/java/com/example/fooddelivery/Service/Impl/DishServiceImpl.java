@@ -81,7 +81,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
     @Override
     public void removeDishes(List<String> list) {
-        this.removeBatchByIds(list);
+        this.removeByIds(list);
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(DishFlavor::getDishId,list);
         dishFlavorService.remove(queryWrapper);
