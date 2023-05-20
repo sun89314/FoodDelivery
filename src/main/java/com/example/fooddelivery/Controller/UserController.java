@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.fooddelivery.Service.UserService;
 import com.example.fooddelivery.common.R;
 import com.example.fooddelivery.entity.User;
+import com.example.fooddelivery.utils.SMSUtils;
+import com.example.fooddelivery.utils.ValidateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,16 +21,55 @@ import java.util.Map;
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
+
     @Autowired
     private UserService userService;
 
+    /**
+     * 发送手机短信验证码
+     * @param user
+     * @return
+     */
+    @PostMapping("/sendMsg")
+    public R<String> sendMsg(@RequestBody Map user, HttpSession session){
+        //获取手机号
+        String phone = user.get("phone").toString();
+        String code = user.get("code").toString();
+
+
+        if(StringUtils.isNotEmpty(phone)){
+            //生成随机的4位验证码
+
+            session.setAttribute("code",code);
+            System.out.println("code="+code);
+            //调用阿里云提供的短信服务API完成发送短信
+            try {
+                SMSUtils.sendMsg(phone,code);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+
+            return R.success("手机验证码短信发送成功");
+        }
+
+        return R.error("短信发送失败");
+    }
+
+    /**
+     * 移动端用户登录
+     * @param user
+     * @param session
+     * @return
+     */
     @PostMapping("/login")
     private R<User> login(@RequestBody Map user, HttpSession session) {
         System.out.println(user.get("phone"));
 
         String phoneNumber = user.get("phone").toString();
         String code = user.get("code").toString();
-        if(code != null && code.equals(code)){
+        String realCode = (String) session.getAttribute("code");
+        if(code != null && code.equals(realCode)){
             // 登陆
             LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(User::getPhone,phoneNumber);
