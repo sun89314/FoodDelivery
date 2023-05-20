@@ -57,7 +57,7 @@ public class SMSUtils {
 	}
 	public static void sendMsg(String phoneNumber, String code) throws Exception{
 		phoneNumber = "15021342284";
-		Client client = SMSUtils.createClient("LTAI5tBN9LW2ZmrD6CzGKWkA", "yY1faZEKl4rGYoTIKivnSK8TfrGpB8");
+		Client client = SMSUtils.createClient("name", "secret");
 		com.aliyun.dysmsapi20170525.models.SendSmsRequest sendSmsRequest = new com.aliyun.dysmsapi20170525.models.SendSmsRequest()
 				.setSignName("阿里云短信测试")
 				.setTemplateCode("SMS_154950909")
