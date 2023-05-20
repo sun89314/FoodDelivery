@@ -11,12 +11,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.UUID;
 
-@Slf4j
+/**
+ * 文件上传和下载
+ */
 @RestController
 @RequestMapping("/common")
+@Slf4j
 public class CommonController {
     /**
      * 实现文件上传功能：
@@ -25,8 +31,15 @@ public class CommonController {
      */
     @Value("${reggie.path}")
     private String basePath;
+
+    /**
+     * 文件上传
+     * @param file
+     * @return
+     */
     @PostMapping("/upload")
     public R<String> upload(MultipartFile file){
+        //file是一个临时文件，需要转存到指定位置，否则本次请求完成后临时文件会删除
         log.info(file.toString());
         //原始文件名
         String originalFileName = file.getOriginalFilename();

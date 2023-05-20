@@ -10,6 +10,7 @@ import com.example.fooddelivery.dto.SetmealDto;
 import com.example.fooddelivery.entity.Category;
 import com.example.fooddelivery.entity.Setmeal;
 import com.example.fooddelivery.entity.SetmealDish;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/setmeal")
+@Slf4j
 public class SetMealController {
     @Autowired
     private SetMealService setMealService;
@@ -94,5 +96,21 @@ public class SetMealController {
         List<String> list = Arrays.asList(id);
         setMealService.removeWithDishByIds(list);
         return R.success("删除成功");
+    }
+    /**
+     * 根据条件查询套餐数据
+     * @param setmeal
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Setmeal>> list(Setmeal setmeal){
+        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(setmeal.getCategoryId() != null,Setmeal::getCategoryId,setmeal.getCategoryId());
+        queryWrapper.eq(setmeal.getStatus() != null,Setmeal::getStatus,setmeal.getStatus());
+        queryWrapper.orderByDesc(Setmeal::getUpdateTime);
+
+        List<Setmeal> list = setMealService.list(queryWrapper);
+
+        return R.success(list);
     }
 }

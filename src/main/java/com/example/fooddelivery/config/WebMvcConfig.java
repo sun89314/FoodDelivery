@@ -1,6 +1,7 @@
 package com.example.fooddelivery.config;
 
 import com.example.fooddelivery.common.JacksonObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -27,6 +28,10 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
 
     }
 
+    /**
+     * 扩展mvc框架的消息转换器
+     * @param converters
+     */
     @Override
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
