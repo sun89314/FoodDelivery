@@ -37,7 +37,7 @@ public class LoginCheckFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        log.info("拦截到请求: {}",request.getRequestURI());
+//        log.info("拦截到请求: {}",request.getRequestURI());
         //1 获取本次请求的url
         String currentUrl = request.getRequestURI();
         //2 判断这个url需不需要被处理，怎么处理通配符？
