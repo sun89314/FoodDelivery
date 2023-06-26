@@ -23,7 +23,7 @@ import java.util.List;
 public class AddressBookController {
 
     @Autowired
-    private AddressBookService addressBookService;
+    public AddressBookService addressBookService;
 
     /**
      * 新增

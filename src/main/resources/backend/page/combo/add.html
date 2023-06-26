@@ -51,7 +51,7 @@
         width: 777px;
       }
       .addDish .addBut {
-        background: #ffc200;
+        background: #06C167;
         display: inline-block;
         padding: 0px 20px;
         border-radius: 3px;
@@ -88,8 +88,8 @@
         cursor: pointer;
       }
       .addDishCon .leftCont .act {
-        border-color: #FFC200 !important;
-        color: #FFC200 !important;
+        border-color: #06C167 !important;
+        color: #06C167 !important;
       }
       .addDishCon .leftCont .tabList {
         flex: 1;
@@ -246,8 +246,8 @@
           </div>
           <div class="subBox address">
             <el-form-item>
-              <el-button @click="goBack()"> 取消 </el-button>
-              <el-button type="primary" @click="submitForm('ruleForm', false)"> 保存 </el-button>
+              <el-button @click="goBack()"> cancel </el-button>
+              <el-button type="primary" @click="submitForm('ruleForm', false)"> save </el-button>
               <el-button
                 v-if="actionType == 'add'"
                 type="primary"
@@ -470,7 +470,7 @@
                 this.ruleForm.idType = res.data.categoryId
                 // this.ruleForm.password = ''
               } else {
-                this.$message.error(res.msg || '操作失败')
+                this.$message.error(res.msg || 'Action Failed')
               }
             })
           },
@@ -483,7 +483,7 @@
               if (res.code === 1) {
                 this.setMealList = res.data.map((obj) => ({ ...obj, idType: obj.id }))
               } else {
-                this.$message.error(res.msg || '操作失败')
+                this.$message.error(res.msg || 'Action Failed')
               }
             })
           },
@@ -574,11 +574,11 @@
                           this.imageUrl = ''
                         }
                       } else {
-                        this.$message.error(res.msg || '操作失败')
+                        this.$message.error(res.msg || 'Action Failed')
                       }
                     })
                     .catch((err) => {
-                      this.$message.error('请求出错了：' + err)
+                      this.$message.error('Error：' + err)
                     })
                 } else {
                   delete prams.updateTime
@@ -588,11 +588,11 @@
                         this.$message.success('套餐修改成功！')
                         this.goBack()
                       } else {
-                        this.$message.error(res.msg || '操作失败')
+                        this.$message.error(res.msg || 'Action Failed')
                       }
                     })
                     .catch((err) => {
-                      this.$message.error('请求出错了：' + err)
+                      this.$message.error('Error：' + err)
                     })
                 }
               } else {

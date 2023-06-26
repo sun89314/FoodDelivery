@@ -29,7 +29,7 @@
           ></i>
         </el-input>
         <div class="tableLab">
-          <span class="span-btn delBut non" @click="deleteHandle('批量')">批量删除</span>
+          <span class="span-btn delBut non" @click="deleteHandle('Multi')">批量删除</span>
           <span class="span-btn blueBug non" @click="statusHandle('1')">批量启售</span>
           <span
             style="border:none;"
@@ -175,7 +175,7 @@
                 this.counts = res.data.total
               }
             }).catch(err => {
-              this.$message.error('请求出错了：' + err)
+              this.$message.error('Error：' + err)
             })
           },
           getImage (image) {
@@ -204,24 +204,24 @@
 
           // 删除
           deleteHandle (type, id) {
-            if (type === '批量' && id === null) {
+            if (type === 'Multi' && id === null) {
               if (this.checkList.length === 0) {
-                return this.$message.error('请选择删除对象')
+                return this.$message.error('choose target!')
               }
             }
             this.$confirm('确定删除该套餐, 是否继续?', '确定删除', {
-              'confirmButtonText': '确定',
-              'cancelButtonText': '取消',
+              'confirmButtonText': 'confirm',
+              'cancelButtonText': 'cancel',
             }).then(() => {
-              deleteSetmeal(type === '批量' ? this.checkList.join(',') : id).then(res => {
+              deleteSetmeal(type === 'Multi' ? this.checkList.join(',') : id).then(res => {
                 if (res.code === 1) {
                   this.$message.success('删除成功！')
                   this.handleQuery()
                 } else {
-                  this.$message.error(res.msg || '操作失败')
+                  this.$message.error(res.msg || 'Action Failed')
                 }
               }).catch(err => {
-                this.$message.error('请求出错了：' + err)
+                this.$message.error('Error：' + err)
               })
             })
           },
@@ -241,8 +241,8 @@
               params.status = row.status ? '0' : '1'
             }
             this.$confirm('确认更改该套餐状态?', '提示', {
-              'confirmButtonText': '确定',
-              'cancelButtonText': '取消',
+              'confirmButtonText': 'confirm',
+              'cancelButtonText': 'cancel',
               'type': 'warning'
             }).then(() => {
               // 起售停售---批量起售停售接口
@@ -251,10 +251,10 @@
                   this.$message.success('套餐状态已经更改成功！')
                   this.handleQuery()
                 } else {
-                  this.$message.error(res.msg || '操作失败')
+                  this.$message.error(res.msg || 'Action Failed')
                 }
               }).catch(err => {
-                  this.$message.error('请求出错了：' + err)
+                  this.$message.error('Error：' + err)
               })
             })
           },

@@ -17,10 +17,10 @@ import java.util.List;
 @Slf4j
 public class ShoppingCartController {
     @Autowired
-    private ShoppingCartService shoppingCartService;
+    public ShoppingCartService shoppingCartService;
 
     @GetMapping("/list")
-    private R<List<ShoppingCart>> getShoppingCartList(){
+    public R<List<ShoppingCart>> getShoppingCartList(){
         Long currentId = BaseContext.getCurrentId();
         LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ShoppingCart::getUserId,currentId);
@@ -39,7 +39,7 @@ public class ShoppingCartController {
 
 
     @PostMapping("/add")
-    private R<ShoppingCart> addDish(@RequestBody  ShoppingCart shoppingCart, HttpSession session){
+    public R<ShoppingCart> addDish(@RequestBody  ShoppingCart shoppingCart, HttpSession session){
         System.out.println(shoppingCart);
         //设置用户id
         Long currentId = BaseContext.getCurrentId();

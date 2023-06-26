@@ -29,7 +29,7 @@ public class AddressBook implements Serializable {
     private String phone;
 
 
-    //性别 0 女 1 男
+    //性别 0 女 1 Male
     private String sex;
 
 

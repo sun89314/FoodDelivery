@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Aspect
 public class Monitor {
-    @Pointcut("execution(* com.example.fooddelivery.Service.*.*(..))")
+    @Pointcut("execution(* com.example.fooddelivery.Controller.*.*(..))")
     private void pointCutMethod() {
     }
     @Around("pointCutMethod()")

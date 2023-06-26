@@ -25,9 +25,9 @@ import java.util.concurrent.TimeUnit;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    public UserService userService;
     @Autowired
-    private RedisTemplate redisTemplate;
+    public RedisTemplate redisTemplate;
 
     /**
      * 发送手机短信验证码
@@ -68,7 +68,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
-    private R<User> login(@RequestBody Map user, HttpSession session) {
+    public R<User> login(@RequestBody Map user, HttpSession session) {
 
         String phoneNumber = user.get("phone").toString();
         String code = user.get("code").toString();

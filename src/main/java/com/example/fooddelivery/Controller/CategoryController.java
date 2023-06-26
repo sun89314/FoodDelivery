@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/category")
 public class CategoryController {
     @Autowired
-    private CategoryService categoryService;
+    public CategoryService categoryService;
 
     /**
      * 新增分类

@@ -13,6 +13,7 @@ import com.example.fooddelivery.entity.Category;
 import com.example.fooddelivery.entity.Dish;
 import com.example.fooddelivery.entity.DishFlavor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,13 +31,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/dish")
 public class DishController {
     @Autowired
-    private DishService dishService;
+    public DishService dishService;
     @Autowired
-    private CategoryService categoryService;
+    public CategoryService categoryService;
     @Autowired
-    private DishFlavorService dishFlavorService;
+    public DishFlavorService dishFlavorService;
     @Autowired
-    private RedisTemplate redisTemplate;
+    public RedisTemplate redisTemplate;
 
     /**
      * 获取菜品分页内容
@@ -94,6 +95,10 @@ public class DishController {
      */
     @GetMapping("/list")
     public R<List<DishDto>> getDishByCategory(Dish dish){
+        List<DishDto> list = null;
+        String key = "dish_"+ dish.getCategoryId()+"_"+dish.getStatus();
+        list = (List<DishDto>)redisTemplate.opsForValue().get(key);
+        if(list != null) return R.success(list);
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null ,Dish::getCategoryId,dish.getCategoryId());
         //添加条件，查询状态为1（起售状态）的菜品
@@ -103,7 +108,8 @@ public class DishController {
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
 
         List<Dish> dishList = dishService.list(queryWrapper);
-        List<DishDto> list = dishList.stream().map(item -> {
+
+        list = dishList.stream().map(item -> {
             DishDto dishDto = new DishDto();
             BeanUtils.copyProperties(item,dishDto);//复制老的
             Long categoryId = item.getCategoryId();//分类id
@@ -120,6 +126,7 @@ public class DishController {
             dishDto.setFlavors(dishFlavorService.list(queryWrapper1));
             return dishDto;
         }).collect(Collectors.toList());
+        redisTemplate.opsForValue().set(key,list,1, TimeUnit.DAYS);
 
 
         return R.success(list);
@@ -171,7 +178,7 @@ public class DishController {
         String[] ids = s.split(",");
         List<String> list = Arrays.asList(ids);
         dishService.removeDishes(list);
-        return R.success("修改菜品状态成功");
+        return R.success("Success");
     }
 
     /**

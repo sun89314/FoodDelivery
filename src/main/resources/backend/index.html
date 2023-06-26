@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>瑞吉外卖管理端</title>
+    <title>Food Delivery Admin Management Page</title>
     <link rel="shortcut icon" href="favicon.ico">
-    <!-- 引入样式 -->
+    <!-- css -->
     <link rel="stylesheet" href="plugins/element-ui/index.css" />
     <link rel="stylesheet" href="styles/common.css" />
     <link rel="stylesheet" href="styles/index.css" />
@@ -32,7 +32,7 @@
         <div class="sidebar-container">
           <div class="logo">
             <!-- <img src="images/logo.png" width="122.5" alt="" /> -->
-            <img src="images/login/login-logo.png" alt="" style="width: 117px; height: 32px" />
+            <img src="images/login/login-logo.png" alt="" style="width: 120px; height: 50px" />
           </div>
 
           <el-scrollbar wrap-class="scrollbar-wrapper">
@@ -74,14 +74,13 @@
           <div class="navbar">
             <div class="head-lable">
               <span v-if="goBackFlag" class="goBack" @click="goBack()"
-                ><img src="images/icons/btn_back@2x.png" alt="" /> 返回</span
+                ><img src="images/icons/btn_back@2x.png" alt="" /> Back</span
               >
               <span>{{headTitle}}</span>
             </div>
             <div class="right-menu">
               <div class="avatar-wrapper">{{ userInfo.name }}</div>
-              <!-- <div class="logout" @click="logout">退出</div> -->
-              <img src="images/icons/btn_close@2x.png" class="outLogin" alt="退出" @click="logout" />
+              <img src="images/icons/btn_close@2x.png" class="outLogin" alt="Log out" @click="logout" />
             </div>
           </div>
           <div class="app-main" v-loading="loading">
@@ -100,11 +99,9 @@
         </div>
       </div>
     </div>
-    <!-- 开发环境版本，包含了有帮助的命令行警告 -->
     <script src="plugins/vue/vue.js"></script>
-    <!-- 引入组件库 -->
     <script src="plugins/element-ui/index.js"></script>
-    <!-- 引入axios -->
+    <!-- axios -->
     <script src="plugins/axios/axios.min.js"></script>
     <script src="js/request.js"></script>
     <script src="./api/login.js"></script>
@@ -118,37 +115,33 @@
             menuActived: '2',
             userInfo: {},
             menuList: [
-              // {
-              //   id: '1',
-              //   name: '门店管理',
-              //   children: [
                   {
                     id: '2',
-                    name: '员工管理',
+                    name: 'Employee',
                     url: 'page/member/list.html',
                     icon: 'icon-member'
                   },
                   {
                     id: '3',
-                    name: '分类管理',
+                    name: 'Category',
                     url: 'page/category/list.html',
                     icon: 'icon-category'
                   },
                   {
                     id: '4',
-                    name: '菜品管理',
+                    name: 'Dishes',
                     url: 'page/food/list.html',
                     icon: 'icon-food'
                   },
                   {
                     id: '5',
-                    name: '套餐管理',
+                    name: 'Combo',
                     url: 'page/combo/list.html',
                     icon: 'icon-combo'
                   },
                   {
                     id: '6',
-                    name: '订单明细',
+                    name: 'Order Detail',
                     url: 'page/order/list.html',
                     icon: 'icon-order'
                   }
@@ -156,7 +149,7 @@
               // },
             ],
             iframeUrl: 'page/member/list.html',
-            headTitle: '员工管理',
+            headTitle: 'Employee',
             goBackFlag: false,
             loading: true,
             timer: null

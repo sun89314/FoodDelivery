@@ -24,10 +24,10 @@ import java.util.List;
 public class EmployeeController {
 
     @Autowired
-    private EmployeeService employeeService;
+    public EmployeeService employeeService;
 
     /**
-     * 员工登录
+     * Employee Login, according to username and password
      * @param request
      * @param employee
      * @return
@@ -36,27 +36,26 @@ public class EmployeeController {
     public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
 
         //1、将页面提交的密码password进行md5加密处理
+        //1、Encrypt the password submitted by the page
         String password = employee.getPassword();
         password = DigestUtils.md5DigestAsHex(password.getBytes());
 
         //2、根据页面提交的用户名username查询数据库
+        //2、query the database according to the username submitted by the page
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Employee::getUsername,employee.getUsername());
         Employee emp = employeeService.getOne(queryWrapper);
 
         //3、如果没有查询到则返回登录失败结果
-        if(emp == null){
-            return R.error("登录失败");
+        //3、If no query is returned, the login fails
+        //4、Password comparison, if inconsistent, return login failure result
+        if(emp == null || !emp.getPassword().equals(password)){
+            return R.error("Login failed");
         }
-
-        //4、密码比对，如果不一致则返回登录失败结果
-        if(!emp.getPassword().equals(password)){
-            return R.error("登录失败");
-        }
-
         //5、查看员工状态，如果为已禁用状态，则返回员工已禁用结果
+        //5、Check the employee status. If it is disabled, return the employee is disabled
         if(emp.getStatus() == 0){
-            return R.error("账号已禁用");
+            return R.error("The employee is disabled");
         }
 
         //6、登录成功，将员工id存入Session并返回登录成功结果
@@ -65,46 +64,37 @@ public class EmployeeController {
     }
 
     /**
-     * 员工退出
+     * Logout
      * @param request
      * @return
      */
     @PostMapping("/logout")
     public R<String> logout(HttpServletRequest request){
         //清理Session中保存的当前登录员工的id
+        //clear the id of the currently logged in employee saved in the Session
         request.getSession().removeAttribute("employee");
-        return R.success("退出成功");
+        return R.success("Logout successfully");
     }
 
     /**
-     * 新增员工
+     * Get all employees
      * @param request
      * @param emp
      * @return
      */
     @PostMapping()
     public R<String> saveUser(HttpServletRequest request,@RequestBody Employee emp){
-        log.info("新增员工：{}",emp.toString());
-        //设置初始密码,时间等内容
+        log.info("New Employee：{}",emp.toString());
+        //Set initial password, time and other content
         String password = "111111";
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         emp.setPassword(password);
-//        emp.setCreateTime(LocalDateTime.now());
-//        emp.setUpdateTime(LocalDateTime.now());
-//        emp.setCreateUser((Long) request.getSession().getAttribute("employee"));
-//        emp.setUpdateUser((Long) request.getSession().getAttribute("employee"));
-
-//        try {
-//            employeeService.save(emp);
-//        } catch (Exception e) {
-//            return R.error("添加用户失败");
-//        }
         employeeService.save(emp);
-        return R.success("新增员工成功");
+        return R.success("New employee successfully");
     }
 
     /**
-     * 分页处理器，使用page对象
+     * using page object to get all employees
      * @param page
      * @param pageSize
      * @param name
@@ -113,19 +103,20 @@ public class EmployeeController {
     @GetMapping("/page")
     public R<Page<Employee>> getPage(int page, int pageSize, String name){
         log.info("page = {},pageSize = {},name = {}" ,page,pageSize,name);
-        //构造分页构造器
+        //Create Page object
         Page pageinfo = new Page(page,pageSize);
-        //构造条件构造器
+        //query all the employees, and sort by update time to get the latest employee
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.like(!StringUtils.isEmpty(name), Employee::getName,name);
         queryWrapper.orderByDesc(Employee::getUpdateTime);
-        //查询
+        //use the page object to get the employees
         employeeService.page(pageinfo,queryWrapper);
+
         return R.success(pageinfo);
     }
 
     /**
-     * 根据id来修改员工信息
+     * Edit employee information according to id
      * @param employee
      * @return
      */
@@ -137,7 +128,7 @@ public class EmployeeController {
 //        employee.setUpdateTime(LocalDateTime.now());
         log.info(employee.toString());
         employeeService.updateById(employee);
-        return R.success("员工信息修改成功");
+        return R.success("Update employee successfully");
     }
 
     @GetMapping("/{id}")
@@ -146,6 +137,6 @@ public class EmployeeController {
         if(emp != null){
             return R.success(emp);
         }
-        return R.error("没有查询到对应员工信息");
+        return R.error("The employee does not exist");
     }
 }

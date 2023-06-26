@@ -25,11 +25,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SetMealController {
     @Autowired
-    private SetMealService setMealService;
+    public SetMealService setMealService;
     @Autowired
-    private CategoryService categoryService;
+    public CategoryService categoryService;
     @Autowired
-    private SetMealDishService setMealDishService;
+    public SetMealDishService setMealDishService;
 
     /**
      * 添加套餐

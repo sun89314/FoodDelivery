@@ -30,7 +30,7 @@ public class CommonController {
      * 关键点2：file.transferTo(new File(basePath+fileName));
      */
     @Value("${reggie.path}")
-    private String basePath;
+    public String basePath;
 
     /**
      * 文件上传
