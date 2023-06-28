@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -97,9 +98,24 @@ public class AddressBookController {
         //条件构造器
         LambdaQueryWrapper<AddressBook> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(null != addressBook.getUserId(), AddressBook::getUserId, addressBook.getUserId());
-        queryWrapper.orderByDesc(AddressBook::getUpdateTime);
+        queryWrapper.orderByDesc(AddressBook::getCreateTime);
 
         //SQL:select * from address_book where user_id = ? order by update_time desc
         return R.success(addressBookService.list(queryWrapper));
     }
+
+    /**
+     * update address
+     * @param session
+     * @param addressBook
+     * @return
+     */
+    @PutMapping()
+    public R<String> updateAddress(HttpSession session, @RequestBody AddressBook addressBook){
+        log.info("addressBook:{}", addressBook);
+        addressBook.setUserId((Long) session.getAttribute("user"));
+        addressBookService.updateById(addressBook);
+        return R.success("保存成功");
+    }
+
 }

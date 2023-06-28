@@ -3,6 +3,7 @@ package com.example.fooddelivery.Controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.fooddelivery.Service.OrderDetailService;
 import com.example.fooddelivery.Service.OrderService;
 import com.example.fooddelivery.Service.ShoppingCartService;
 import com.example.fooddelivery.Service.UserService;
@@ -11,6 +12,7 @@ import com.example.fooddelivery.common.CustomException;
 import com.example.fooddelivery.common.R;
 import com.example.fooddelivery.dto.OrdersDto;
 import com.example.fooddelivery.entity.Employee;
+import com.example.fooddelivery.entity.OrderDetail;
 import com.example.fooddelivery.entity.Orders;
 import com.example.fooddelivery.entity.ShoppingCart;
 import com.example.fooddelivery.entity.User;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.datasource.ConnectionHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -30,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.jdbc.datasource.ConnectionHolder;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -51,6 +55,8 @@ public class OrderController {
     public DataSource dataSource;
     @Autowired
     public UserService userService;
+    @Autowired
+    public OrderDetailService orderDetailService;
     @Autowired
     public ShoppingCartService shoppingCartService;
     class MyThread extends Thread{
@@ -153,6 +159,36 @@ public class OrderController {
 
         orderService.updateById(orders);
         return  R.success("Success");
+    }
+
+    @GetMapping("/userPage")
+    public R<Page<OrdersDto>> getUserPage(int page, int pageSize, HttpSession session) {
+        Long userId = BaseContext.getCurrentId();
+        //Create Page object
+        Page pageinfo = new Page(page, pageSize);
+        //Find Users most recent Order
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(Orders::getUserId, userId)
+                    .orderByDesc(Orders::getOrderTime)
+                    .last("limit " + (page - 1) * pageSize + "," + pageSize);
+        List<Orders> orders = orderService.list(queryWrapper);
+        if(orders.size() == 0){
+            return R.success(null);
+        }
+        List<OrdersDto> ordersDtos = new ArrayList<>();
+        for(Orders order : orders){
+            OrdersDto ordersDto = new OrdersDto();
+            BeanUtils.copyProperties(order,ordersDto);
+            LambdaQueryWrapper<OrderDetail> detailQueryWrapper = new LambdaQueryWrapper<>();
+            detailQueryWrapper.eq(OrderDetail::getOrderId,order.getId());
+            List<OrderDetail> orderDetails = orderDetailService.list(detailQueryWrapper);
+            ordersDto.setOrderDetails(orderDetails);
+            ordersDtos.add(ordersDto);
+        }
+        //find the order detail
+        pageinfo.setRecords(ordersDtos.subList((page - 1) * pageSize,page * pageSize > ordersDtos.size() ? ordersDtos.size() : page * pageSize));
+        pageinfo.setTotal(ordersDtos.size());
+        return R.success(pageinfo);
     }
 
 }

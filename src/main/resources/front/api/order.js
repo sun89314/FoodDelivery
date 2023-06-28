@@ -16,6 +16,12 @@ function orderListApi() {
 }
 
 //分页查询订单
+function getUserInfo() {
+    return $axios({
+        'url': '/user/getUser',
+        'method': 'get'
+    })
+}
 function orderPagingApi(data) {
   return $axios({
       'url': '/order/userPage',

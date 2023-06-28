@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -93,4 +94,14 @@ public class UserController {
         }
         return R.error("fail");
     }
+
+    @GetMapping("/getUser")
+    public R<User> getUser(HttpSession session, Long userId) {
+        if(userId == null){
+            userId = (Long) session.getAttribute("user");
+        }
+        User user = userService.getById(userId);
+        return R.success(user);
+    }
+
 }
